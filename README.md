@@ -1,6 +1,6 @@
 # OfficeGrader Project Documentation
 
-# Description
+## Description
 
 The OfficeGrader Project Moodle plugin automates
 
@@ -13,12 +13,13 @@ Without this plugin, when students submit documents for grading, the instructor 
 
 The OfficeGrader Project plugin automates all this, thus removing the need for instructor intervention. The instructor only needs to create the OfficeGrader Projects in Moodle, and the plugin takes care of handling and grading student submissions.
 
-# Requirements
+## Requirements
 
+- A server running OfficeGrader for Moodle (see www.officegrader.com for more information)
 - Moodle version 2.7 or greater
 - A folder the web server has permission to read from and write to (moodledata by default)
 
-# Quickstart Installation Instructions
+## Quickstart Installation Instructions
 
 1. Copy the &quot;og&quot; folder and its contents to the &quot;mod&quot; folder of your Moodle installation
 2. Log in as admin and go to Administration &gt; Site administration &gt; Notifications
@@ -27,16 +28,16 @@ The OfficeGrader Project plugin automates all this, thus removing the need for i
 5. Leave the Office Grader FTP path the moodledata folder (the default) [OR if you prefer, create a user and new ftp path OR use existing user and create ftp path. Add user to the www-data (or your web server&#39;s) group, and give write privileges to the folder to the web server.]
 6. If not already set, edit Moodle cron schedule to execute every minute (or your preference, we recommend one minute.)
 
-# Troubleshooting
+## Troubleshooting
 
-Problem: The admin notifications page does not show the OfficeGrader plugin (step 3 of the &quot;Quick installation&quot; section, or step 8 of the &quot;Detailed installation instructions&quot; section).
+**Problem:** The admin notifications page does not show the OfficeGrader plugin (step 3 of the &quot;Quick installation&quot; section, or step 8 of the &quot;Detailed installation instructions&quot; section).
 
-Solution: Make sure you copied the &quot;og&quot; folder and all its contents to the &quot;mod&quot; folder of your Moodle installation.
+**Solution:** Make sure you copied the &quot;og&quot; folder and all its contents to the &quot;mod&quot; folder of your Moodle installation.
 
-Problem: The Ogin/ogout directory settings page says &quot;This value is not valid&quot; when you click &quot;Save changes&quot;.
+**Problem:** The Ogin/ogout directory settings page says &quot;This value is not valid&quot; when you click &quot;Save changes&quot;.
 
-Solution: Enter a valid path to an existing folder. If you don&#39;t know what to enter, just copy the default path (given beside the text input field).
+**Solution:** Enter a valid path to an existing folder. If you don&#39;t know what to enter, just copy the default path (given beside the text input field).
 
-Problem: The Ogin/ogout directory settings page says &quot;The specified directory is not readable or writable&quot; when you click &quot;Save changes&quot;.
+**Problem:** The Ogin/ogout directory settings page says &quot;The specified directory is not readable or writable&quot; when you click &quot;Save changes&quot;.
 
-Solution: Either change the permissions of the specified directory so the web server can read from and write to the folder, or choose a different folder. The default folder should work (the path is given beside the text input field).
+**Solution:** Either change the permissions of the specified directory so the web server can read from and write to the folder, or choose a different folder. The default folder should work (the path is given beside the text input field).
