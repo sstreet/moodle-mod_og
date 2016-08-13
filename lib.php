@@ -479,7 +479,6 @@ function og_grade_item_delete($og) {
     require_once($CFG->libdir.'/gradelib.php');
 
     return grade_update('mod/og', $og->course, 'mod', 'og',
-        //$og->instance, 0, null, array('deleted' => 1));
         $og->id, 0, null, array('deleted' => 1));
 }
 

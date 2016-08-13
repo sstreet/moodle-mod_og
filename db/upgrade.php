@@ -36,7 +36,7 @@ function xmldb_og_upgrade($oldversion) {
     $dbman = $DB->get_manager(); // Loads ddl manager and xmldb classes.
 
     if ($oldversion < 2016032400) {
-        // Do something
+        // Do something.
 
         // Og savepoint reached.
         upgrade_mod_savepoint(true, 2016032400, 'og');

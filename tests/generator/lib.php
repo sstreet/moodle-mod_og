@@ -85,7 +85,8 @@ class mod_og_generator extends testing_module_generator {
                 DEBUG_DEVELOPER);
         }
         if ($record->completion && empty($course->enablecompletion)) {
-            debugging('Did you forget to enable completion tracking for the course before generating module with completion tracking?',
+            debugging('Did you forget to enable completion tracking for the course ' .
+                      'before generating module with completion tracking?',
                 DEBUG_DEVELOPER);
         }
 
