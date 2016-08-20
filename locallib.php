@@ -33,7 +33,7 @@ require_once($CFG->dirroot . '/repository/lib.php');
  * @copyright  2016 Sarah Street
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class simplehtml_form extends moodleform {
+class mod_og_form extends moodleform {
 
     /** @var int The cmid of the current OG Project*/
     public $id;

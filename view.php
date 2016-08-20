@@ -71,6 +71,6 @@ $PAGE->set_url('/mod/og/view.php', array(
 $PAGE->set_title(format_string($og->name));
 $PAGE->set_heading(format_string($course->fullname));
 
-$mform = new simplehtml_form($CFG->wwwroot . '/mod/og/view.php?' . 'id=' . $cm->id. 'action=' . $action);
+$mform = new mod_og_form($CFG->wwwroot . '/mod/og/view.php?' . 'id=' . $cm->id. 'action=' . $action);
 $mform->id = $cm->id;
 echo $mform->view($action);
