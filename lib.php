@@ -464,6 +464,10 @@ function og_grade_item_update(stdClass $og, $grades = null) {
         $grades->rawgrade = null;
     }
 
+    if (!$og->instance) {
+        $og->instance = null;
+    }
+
     return grade_update('mod/og', $og->course, 'mod', 'og',
         $og->instance, 0, $grades, $item);
 }
