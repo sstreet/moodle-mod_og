@@ -28,6 +28,6 @@ $plugin->component = 'mod_og';
 $plugin->version = 2016032400;
 $plugin->release = 'v0.1';
 $plugin->requires = 2014111000;
-$plugin->maturity = MATURITY_ALPHA;
+$plugin->maturity = MATURITY_RC;
 $plugin->cron = 0;
 $plugin->dependencies = array();
