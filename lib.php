@@ -575,7 +575,7 @@ function og_pluginfile($course, $cm, $context, $filearea, array $args, $forcedow
     }
 
     if (!has_capability('mod/og:viewallsubmissions', $context)) {
-        if($file->get_userid() != $USER->id) {
+        if ($file->get_userid() != $USER->id) {
             return false;
         }
     }
