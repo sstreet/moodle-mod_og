@@ -48,6 +48,16 @@ $capabilities = array(
         )
     ),
 
+    'mod/og:viewallsubmissions' => array(
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_MODULE,
+        'legacy' => array(
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        )
+    ),
+
     'mod/og:submit' => array(
         'riskbitmask' => RISK_SPAM,
         'captype' => 'write',

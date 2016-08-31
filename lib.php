@@ -557,7 +557,7 @@ function og_get_file_info($browser, $areas, $course, $cm, $context, $filearea, $
  * @param array $options additional options affecting the file serving
  */
 function og_pluginfile($course, $cm, $context, $filearea, array $args, $forcedownload, array $options = array()) {
-    global $DB, $CFG;
+    global $DB, $USER;
 
     if ($context->contextlevel != CONTEXT_MODULE) {
         send_file_not_found();
@@ -572,6 +572,12 @@ function og_pluginfile($course, $cm, $context, $filearea, array $args, $forcedow
     $fs = get_file_storage();
     if (!($file = $fs->get_file_by_hash(sha1($fullpath))) || $file->is_directory()) {
         return false;
+    }
+
+    if (!has_capability('mod/og:viewallsubmissions', $context)) {
+        if($file->get_userid() != $USER->id) {
+            return false;
+        }
     }
 
     // Download MUST be forced - security!
