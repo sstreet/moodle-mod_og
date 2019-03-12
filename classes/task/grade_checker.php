@@ -55,6 +55,7 @@ class grade_checker extends \core\task\scheduled_task {
         $userid = 0;
 
         include_once($CFG->dirroot . '/mod/og/lib.php');
+        require_once($CFG->libdir.'/gradelib.php');
         $ogout = \OGINOUTDIR . "/ogout/";
         $files = scandir($ogout);
         foreach ($files as $file) {
@@ -68,38 +69,52 @@ class grade_checker extends \core\task\scheduled_task {
                 $courseid = $fields[0];
                 $cmid = $fields[1];
                 $userid = $fields[2];
+                $submissionid = $fields[3];
 
                 // Record the grade in gradebook.
                 $og = get_fast_modinfo($courseid, $userid)->get_cm($cmid)->get_course_module_record(true);
-                $og->grade = $grade;
-                $og->id = $og->instance;
-                $grades = new \stdClass();
-                $grades->userid = $userid;
-                $grades->rawgrade = 'reset';
-                og_grade_item_update($og, $grades); // This line is necessary to update date graded if grade is the same.
-                $grades->rawgrade = $grade;
-                $success = og_grade_item_update($og, $grades);
+                $old_grade = grade_get_grades($courseid, 'mod', 'og', $og->instance, $userid)->items[0]->grades[$userid]->grade;
+                $fs = get_file_storage();
+                $context = \context_module::instance($cmid);
+                echo "Current grade: ", $old_grade, "<br>";
+                echo "New grade: ", $grade, "<br>";
+                if ($grade >= $old_grade) {
+                    $og->grade = $grade;
+                    $og->id = $og->instance;
+                    $grades = new \stdClass();
+                    $grades->userid = $userid;
+                    $grades->rawgrade = 'reset';
+                    og_grade_item_update($og, $grades); // This line is necessary to update date graded if grade is the same.
+                    $grades->rawgrade = $grade;
+                    $success = og_grade_item_update($og, $grades);
 
-                if ($success === GRADE_UPDATE_OK || $success === GRADE_UPDATE_MULTIPLE) {
-                    // Move the file to Moodle so we can display link for student to download it.
-                    $context = \context_module::instance($cmid);
-                    $fs = get_file_storage();
-                    $filerecord = array('contextid' => $context->id, 'component' => 'mod_og', 'filearea' => 'graded',
-                                        'itemid' => $userid, 'filepath' => '/', 'filename' => $file,
-                                        'timecreated' => time(), 'timemodified' => time());
+                    if ($success === GRADE_UPDATE_OK || $success === GRADE_UPDATE_MULTIPLE) {
+                        // Move the file to Moodle so we can display link for student to download it.
+                        $filerecord = array('contextid' => $context->id, 'component' => 'mod_og', 'filearea' => 'graded',
+                                            'itemid' => $userid, 'filepath' => '/', 'filename' => $file,
+                                            'timecreated' => time(), 'timemodified' => time());
 
-                    // Delete the graded file if it exists.
-                    $oldfile = $fs->get_file($filerecord['contextid'], $filerecord['component'], $filerecord['filearea'],
-                        $filerecord['itemid'], $filerecord['filepath'], $filerecord['filename']);
-                    if ($oldfile) {
-                        $oldfile->delete();
+                        // Delete the graded file if it exists.
+                        $oldfile = $fs->get_file($filerecord['contextid'], $filerecord['component'], $filerecord['filearea'],
+                            $filerecord['itemid'], $filerecord['filepath'], $filerecord['filename']);
+                        if ($oldfile) {
+                            $oldfile->delete();
+                        }
+
+                        $fs->create_file_from_pathname($filerecord, $ogout . $file);
+
+                        // Delete the file.
+                        unlink($ogout . $file);
                     }
-
-                    $fs->create_file_from_pathname($filerecord, $ogout . $file);
-
+                }
+                else {
                     // Delete the file.
                     unlink($ogout . $file);
                 }
+
+                // Place grade in author field of stored_file.
+                $file = array_pop($fs->get_area_files ( $context->id, 'mod_og', "user".$userid, $submissionid, '', false ));
+                $file->set_author($grade);
             }
         }
     }

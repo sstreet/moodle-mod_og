@@ -195,7 +195,15 @@ class mod_og_form extends moodleform {
                             $cellgrade = new html_table_cell($grade);
                             $cellgradedfile = new html_table_cell($gradedfilelink);
 
-                            $file = $this->get_submitted_file($student->id);
+                            if ($gradedfilelink === false) {
+                                $file = array_pop($this->get_submitted_files($student->id));
+                            } else {
+                                $afterunderscore = strrchr($gradedfilelink, "_");
+                                $spacepos = strpos($afterunderscore, " ");
+                                $itemid = substr($afterunderscore, 1, $spacepos);
+                                $file = array_pop($this->get_submitted_files($student->id, $itemid));
+                            }
+
                             if ($file) {
                                 $url = moodle_url::make_pluginfile_url($file->get_contextid(), $file->get_component(),
                                                                        $file->get_filearea(), $file->get_itemid(),
@@ -232,7 +240,7 @@ class mod_og_form extends moodleform {
                             if ($this->verify_minimum_filesize(strlen($onefile), $fileextension)) {
                                 $context = context_module::instance ( $this->id );
                                 file_save_draft_area_files(file_get_submitted_draft_itemid('studentfile'), $context->id,
-                                                           'mod_og', 'attachment', $USER->id);
+                                                           'mod_og', "user".$USER->id, $this->numsubmissions);
 
                                 if ($onefile) {
                                     // If this is Moodle version 2.7 or greater.
@@ -285,7 +293,7 @@ class mod_og_form extends moodleform {
                         return;
                     } else {
                         // See if the student has previously submitted a file.
-                        if ($this->get_submitted_file($USER->id)) {
+                        if ($this->get_submitted_files($USER->id)) {
                             // Redirect to view submitted file summary.
                             $nextpageparams = array();
                             $nextpageparams['id'] = $this->id;
@@ -321,8 +329,8 @@ class mod_og_form extends moodleform {
                     list($course, $cm) = get_course_and_cm_from_cmid($this->id, 'og');
                     $og = grade_get_grades($course->id, 'mod', 'og', $cm->instance, $USER->id);
 
-                    $file = $this->get_submitted_file($USER->id);
-                    if ($file || isset($og->items[0]->grades[$USER->id]->grade)) {
+                    $files = $this->get_submitted_files($USER->id);
+                    if ($files || isset($og->items[0]->grades[$USER->id]->grade)) {
                         // Print grade information.
                         $o .= $OUTPUT->heading(get_string('gradeinfo', 'og'), 3);
 
@@ -357,15 +365,23 @@ class mod_og_form extends moodleform {
                         $this->add_table_row_tuple($gradeinfo, get_string('dategraded', 'og'), $gradedon);
 
                         $o .= html_writer::table($gradeinfo);
+                        $o .= "<br>";
 
                         // Get submitted file information.
-                        if ($file) {
-                            $url = moodle_url::make_pluginfile_url($file->get_contextid(), $file->get_component(),
-                                                                   $file->get_filearea(), $file->get_itemid(),
-                                                                   $file->get_filepath(), $file->get_filename());
-                            $submittedfile = html_writer::link($url, $file->get_filename());
+                        if ($files) {
+                            $submittedfile = array();
+                            $grades = array();
+                            $submittedon = array();
+                            foreach($files as $f) {
+                                $url = moodle_url::make_pluginfile_url($f->get_contextid(), $f->get_component(),
+                                                                       $f->get_filearea(), $f->get_itemid(),
+                                                                       $f->get_filepath(), $f->get_filename());
+                                array_push($submittedfile, html_writer::link($url, $f->get_filename()));
+                                array_push($grades, $f->get_author());
+                                array_push($submittedon, userdate($f->get_timecreated(), get_string('strftimedatetime', 'langconfig')));
+                            }
+
                             $numsubmissions = $this->numsubmissions;
-                            $submittedon = userdate($file->get_timecreated(), get_string('strftimedatetime', 'langconfig'));
                         } else {
                             $submittedfile = get_string('nofilesubmitted', 'og');
                             $submittedon = get_string('notavailable', 'moodle');
@@ -389,14 +405,28 @@ class mod_og_form extends moodleform {
                     $submissioninfo = new html_table();
                     $submissioninfo->size = array('50%', '50%');
                     $o .= $OUTPUT->heading(get_string('submissioninfo', 'og'), 3);
-                    $this->add_table_row_tuple($submissioninfo, get_string('submittedfile', 'og'), $submittedfile);
-                    $this->add_table_row_tuple($submissioninfo, get_string('submittedon', 'og'), $submittedon);
                     $this->add_table_row_tuple($submissioninfo, get_string('numbersubmissions', 'og'), $this->numsubmissions);
                     $this->add_table_row_tuple($submissioninfo, get_string('maxsubmissions', 'og'), $maxsubmissions);
                     $this->add_table_row_tuple($submissioninfo, get_string('duedate', 'og'),
                                                userdate($this->duedate, get_string('strftimedatetime', 'langconfig')));
 
                     $o .= html_writer::table($submissioninfo);
+                    $o .= "<br>";
+
+                    $submissionhistory = new html_table();
+                    $submissionhistory->size = array('33%', '33%', '34%');
+                    $o .= $OUTPUT->heading(get_string('submissionhistory', 'og'), 3);
+                    $submissionhistory->head = array(get_string('submittedfile', 'og'), get_string('submittedon', 'og'), get_string('grade', 'og'));
+                    for($i=0; $i<count($files); $i++) {
+                        $grade = get_string('gradenotavailable', 'og');
+                        if (is_numeric($grades[$i])) {
+                            $grade = $grades[$i];
+                        }
+                        $submissionhistory->data[] = array($submittedfile[$i], $submittedon[$i], $grade);
+                    }
+
+                    $o .= html_writer::table($submissionhistory);
+                    $o .= "<br>";
 
                     $urlparams = array('id' => $this->id, 'action' => 'submit');
                     $o .= $OUTPUT->single_button(new moodle_url($CFG->wwwroot . '/mod/og/view.php', $urlparams),
@@ -486,12 +516,12 @@ class mod_og_form extends moodleform {
      * @param int $userid The user id
      * @return stored_file The submitted file
      */
-    private function get_submitted_file($userid) {
+    private function get_submitted_files($userid, $itemid = false) {
         global $USER;
         $context = context_module::instance ( $this->id );
         $fs = get_file_storage ();
-        $files = $fs->get_area_files ( $context->id, 'mod_og', 'attachment', $userid, '', false );
-        return array_pop($files);
+        $files = $fs->get_area_files ( $context->id, 'mod_og', "user".$userid, $itemid, 'timecreated DESC', false );
+        return $files;
     }
 
     /**
